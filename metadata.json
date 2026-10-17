@@ -1,0 +1,6 @@
+{
+  "name": "ASAGK Kecamatan Kapuas Kuala",
+  "description": "Aplikasi Supervisi Akademik Guru Kelas (ASAGK) Kecamatan Kapuas Kuala untuk Guru Kelas, Kepala Sekolah, dan Pengawas/Supervisor.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,110 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 1. Global Safety Net: Default-deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper Functions
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-\\.]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidRole(role) {
+      return role in ['GURU', 'KEPALA_SEKOLAH', 'PENGAWAS'];
+    }
+
+    function isValidStatus(status) {
+      return status in ['PENDING', 'APPROVED', 'REJECTED'];
+    }
+
+    function isValidPredicate(predicate) {
+      return predicate in ['SANGAT_BAIK', 'BAIK', 'CUKUP', 'PERLU_BIMBINGAN'];
+    }
+
+    function isValidUser(data, userId) {
+      return data.id == userId
+        && data.username is string && data.username.size() > 0 && data.username.size() <= 100
+        && data.name is string && data.name.size() > 0 && data.name.size() <= 200
+        && isValidRole(data.role);
+    }
+
+    function isValidAgenda(data, agendaId) {
+      return data.id == agendaId
+        && data.teacherId is string && data.teacherId.size() > 0 && data.teacherId.size() <= 128
+        && data.teacherName is string && data.teacherName.size() > 0 && data.teacherName.size() <= 200
+        && data.schoolName is string && data.schoolName.size() > 0 && data.schoolName.size() <= 200
+        && data.subject is string && data.subject.size() > 0 && data.subject.size() <= 200
+        && data.topic is string && data.topic.size() > 0 && data.topic.size() <= 500
+        && data.date is string && data.date.size() > 0 && data.date.size() <= 50
+        && isValidStatus(data.status);
+    }
+
+    function isValidEvaluation(data, evalId) {
+      return data.id == evalId
+        && data.teacherId is string && data.teacherId.size() > 0 && data.teacherId.size() <= 128
+        && data.teacherName is string && data.teacherName.size() > 0 && data.teacherName.size() <= 200
+        && data.schoolName is string && data.schoolName.size() > 0 && data.schoolName.size() <= 200
+        && data.subject is string && data.subject.size() > 0 && data.subject.size() <= 200
+        && data.topic is string && data.topic.size() > 0 && data.topic.size() <= 500
+        && data.date is string && data.date.size() > 0 && data.date.size() <= 50
+        && (data.finalScore is number || data.finalScore is int)
+        && data.finalScore >= 0 && data.finalScore <= 100
+        && isValidPredicate(data.predicate)
+        && data.supervisorName is string && data.supervisorName.size() > 0 && data.supervisorName.size() <= 200;
+    }
+
+    function isValidAuditLog(data, logId) {
+      return data.id == logId
+        && data.action is string && data.action.size() > 0 && data.action.size() <= 100
+        && data.userName is string && data.userName.size() > 0 && data.userName.size() <= 200
+        && data.timestamp is string && data.timestamp.size() > 0 && data.timestamp.size() <= 100;
+    }
+
+    // Connection validation test endpoint
+    match /test/{docId} {
+      allow read: if true;
+    }
+
+    // Users Collection
+    match /users/{userId} {
+      allow read: if true;
+      allow create: if isValidId(userId) && isValidUser(incoming(), userId);
+      allow update: if isValidId(userId) && isValidUser(incoming(), userId);
+      allow delete: if isValidId(userId);
+    }
+
+    // Agendas Collection
+    match /agendas/{agendaId} {
+      allow read: if true;
+      allow create: if isValidId(agendaId) && isValidAgenda(incoming(), agendaId);
+      allow update: if isValidId(agendaId) && isValidAgenda(incoming(), agendaId);
+      allow delete: if isValidId(agendaId);
+    }
+
+    // Evaluations Collection
+    match /evaluations/{evalId} {
+      allow read: if true;
+      allow create: if isValidId(evalId) && isValidEvaluation(incoming(), evalId);
+      allow update: if isValidId(evalId) && isValidEvaluation(incoming(), evalId);
+      allow delete: if isValidId(evalId);
+    }
+
+    // Security Audit Logs Collection (Immutable Append-Only)
+    match /audit_logs/{logId} {
+      allow read: if true;
+      allow create: if isValidId(logId) && isValidAuditLog(incoming(), logId);
+      allow update, delete: if false; // Audit logs can NEVER be modified or purged from client
+    }
+  }
+}
+

@@ -1,0 +1,96 @@
+{
+  "entities": {
+    "user": {
+      "title": "UserProfile",
+      "description": "User profile for teachers, principals, and supervisors",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "username": { "type": "string" },
+        "password": { "type": "string" },
+        "name": { "type": "string" },
+        "role": { "type": "string", "enum": ["GURU", "KEPALA_SEKOLAH", "PENGAWAS"] },
+        "schoolName": { "type": "string" },
+        "details": { "type": "string" },
+        "nip": { "type": "string" },
+        "gradeLevel": { "type": "string" }
+      },
+      "required": ["id", "username", "name", "role"]
+    },
+    "agenda": {
+      "title": "SupervisionAgenda",
+      "description": "Supervision agenda schedule and submitted RPP documents",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "teacherId": { "type": "string" },
+        "teacherName": { "type": "string" },
+        "schoolName": { "type": "string" },
+        "gradeLevel": { "type": "string" },
+        "subject": { "type": "string" },
+        "topic": { "type": "string" },
+        "date": { "type": "string" },
+        "time": { "type": "string" },
+        "status": { "type": "string", "enum": ["PENDING", "APPROVED", "REJECTED"] },
+        "feedback": { "type": "string" },
+        "submittedAt": { "type": "string" }
+      },
+      "required": ["id", "teacherId", "teacherName", "schoolName", "subject", "topic", "date", "status"]
+    },
+    "evaluation": {
+      "title": "SupervisionEvaluation",
+      "description": "Academic supervision evaluation results with rubric scores",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "agendaId": { "type": "string" },
+        "teacherId": { "type": "string" },
+        "teacherName": { "type": "string" },
+        "schoolName": { "type": "string" },
+        "subject": { "type": "string" },
+        "topic": { "type": "string" },
+        "date": { "type": "string" },
+        "finalScore": { "type": "number" },
+        "predicate": { "type": "string", "enum": ["SANGAT_BAIK", "BAIK", "CUKUP", "PERLU_BIMBINGAN"] },
+        "generalNotes": { "type": "string" },
+        "recommendations": { "type": "string" },
+        "supervisorName": { "type": "string" },
+        "evaluatedAt": { "type": "string" }
+      },
+      "required": ["id", "teacherId", "teacherName", "schoolName", "subject", "topic", "date", "finalScore", "predicate", "supervisorName"]
+    },
+    "auditLog": {
+      "title": "SecurityAuditLog",
+      "description": "Immutable security and activity audit records",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "action": { "type": "string" },
+        "userName": { "type": "string" },
+        "userRole": { "type": "string" },
+        "details": { "type": "string" },
+        "timestamp": { "type": "string" },
+        "status": { "type": "string" }
+      },
+      "required": ["id", "action", "userName", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "user",
+      "description": "Collection storing user profiles"
+    },
+    "/agendas/{agendaId}": {
+      "schema": "agenda",
+      "description": "Collection storing supervision agendas"
+    },
+    "/evaluations/{evalId}": {
+      "schema": "evaluation",
+      "description": "Collection storing supervision evaluations"
+    },
+    "/audit_logs/{logId}": {
+      "schema": "auditLog",
+      "description": "Immutable collection for security and administrative audit logs"
+    }
+  }
+}
